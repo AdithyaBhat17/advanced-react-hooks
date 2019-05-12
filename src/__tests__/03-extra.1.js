@@ -1,4 +1,3 @@
-import chalk from 'chalk'
 import React from 'react'
 import {render, fireEvent} from 'react-testing-library'
 import Usage from '../exercises-final/03-extra.1'
@@ -23,66 +22,27 @@ test('clicking the button increments the count', () => {
 test('CountProvider is rendering a context provider with the right value', () => {
   const createElement = React.createElement
 
-  const providerProps = {}
+  let providerValues = []
   React.createElement = (...args) => {
     if (args[0].$$typeof === Symbol.for('react.provider')) {
-      Object.assign(providerProps, args[1])
-      if (args.length > 2) {
-        providerProps.children = args.slice(2)
-      }
+      providerValues.push(args[1].value)
     }
     return createElement(...args)
   }
 
-  const {rerender} = render(<Usage />)
+  render(<Usage />)
 
-  expect(providerProps.value).toEqual({
-    count: 0,
-    increment: expect.any(Function),
-  })
+  expect(providerValues).toHaveLength(2)
+  expect(providerValues).toContain(0)
+  expect(providerValues).toContainEqual(expect.any(Function))
+  const setCount = providerValues.find(f => typeof f === 'function')
 
-  providerProps.value.increment() // lol
+  providerValues = []
+  setCount(1) // lol
 
-  // assert that calling increment directly updates the count state
-  expect(providerProps.value).toEqual({
-    count: 1,
-    increment: expect.any(Function),
-  })
-
-  const currentValue = providerProps.value
-
-  // rerender with no changes to test whether the value is memoized
-  rerender(<Usage />)
-
-  try {
-    expect(providerProps.value.increment).toBe(currentValue.increment)
-  } catch (error) {
-    //
-    //
-    //
-    // these comment lines are just here to keep the next line out of the codeframe
-    // so it doesn't confuse people when they see the error message twice.
-    error.message = `🚨  ${chalk.red(
-      `The Provider's \`increment\` function be memoized via React.useCallback to potential issues when passing it to a useEffect dependencies list.`,
-    )}\n\n${error.message}`
-
-    throw error
-  }
-
-  try {
-    expect(providerProps.value).toBe(currentValue)
-  } catch (error) {
-    //
-    //
-    //
-    // these comment lines are just here to keep the next line out of the codeframe
-    // so it doesn't confuse people when they see the error message twice.
-    error.message = `🚨  ${chalk.red(
-      `The Provider's value prop should be memoized via React.useMemo to avoid triggering unnecessary re-renders.`,
-    )}\n\n${error.message}`
-
-    throw error
-  }
+  // assert that calling setCount directly updates the count state
+  expect(providerValues).toContain(1)
+  expect(providerValues).toContain(setCount)
 
   React.createElement = createElement
 })
