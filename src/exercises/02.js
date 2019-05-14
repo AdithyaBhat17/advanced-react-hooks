@@ -10,42 +10,53 @@ import fetchPokemon from '../fetch-pokemon'
 // 🦉 it's a good idea to add a default case handler that throws an error if
 // an unsupported action type is supplied. That way you avoid typo issues!
 
+function pokemonReducer(state, action) {
+  switch(action.type) {
+    case 'LOADING': 
+      return {
+        ...state,
+        loading: true
+      }
+    case 'LOADED': 
+      return {
+        ...state,
+        loading: false,
+        pokemon: action.pokemon
+      }
+    case 'ERROR': {
+      return {
+        ...state,
+        error: action.error
+      }
+    }
+    default: {
+      throw new Error('Unhandled ' + action.type)
+    }
+  }
+}
+
 function PokemonInfo({pokemonName}) {
   // 🐨 add a React.useReducer right here.
+  const [state, dispatch] = React.useReducer(pokemonReducer, {
+    loading: true,
+    pokemon: null,
+    error: null
+  })
   // 💰 your initial state could be something like: {pokemon: null, loading: false, error: null}
 
   // 💣 destroy all three of these useStates
-  const [pokemon, setPokemon] = React.useState(null)
-  const [loading, setLoading] = React.useState(false)
-  const [error, setError] = React.useState(null)
+  // const [pokemon, setPokemon] = React.useState(null)
+  // const [loading, setLoading] = React.useState(false)
+  // const [error, setError] = React.useState(null)
 
   React.useEffect(() => {
-    if (!pokemonName) {
-      return
-    }
-    // 🐨 dispatch a LOADING action here
-    // 💣 remove all these sets
-    setLoading(true)
-    setError(null)
-    setPokemon(null)
-    fetchPokemon(pokemonName).then(
-      pokemon => {
-        // 🐨 dispatch a LOADED action here
-        // 💰 you can pass the pokemon as part of the action you dispatch: dispatch({type: 'LOADED', pokemon})
-        // 💣 remove all these sets
-        setLoading(false)
-        setError(null)
-        setPokemon(pokemon)
-      },
-      error => {
-        // 🐨 dispatch an ERROR action here
-        // 💣 remove all these sets
-        setLoading(false)
-        setError(error)
-        setPokemon(null)
-      },
-    )
+    dispatch({type: 'LOADING'})
+    pokemonName && fetchPokemon(pokemonName)
+    .then(pokemon => dispatch({type: 'LOADED', pokemon}))
+    .catch(error => dispatch({type: 'ERROR', error}))
   }, [pokemonName])
+
+  const { loading, pokemon, error } = state
 
   return (
     <div
