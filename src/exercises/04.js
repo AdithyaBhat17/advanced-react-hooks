@@ -3,16 +3,24 @@ import React from 'react'
 import fetchPokemon from '../fetch-pokemon'
 
 // 🐨 Create a PokemonCacheStateContext
+const PokemonCacheStateContext = React.createContext()
 // 🐨 Create a PokemonCacheDispatchContext
+const PokemonCacheDispatchContext = React.createContext()
 
 function PokemonCacheProvider(props) {
   // 🐨 useReducer right here with pokemonCacheReducer
+  const [state, dispatch] = React.useReducer(pokemonCacheReducer, {})
   // 💰 you can grab the one that's in PokemonInfo
-
   // 🐨 return both of your context providers (nested)
   // 💰 the order is irrelevent.
   // 💰 make sure you render {props.children} in the inner-most provider
-  return props.children
+  return (
+    <PokemonCacheStateContext.Provider value={state}>
+      <PokemonCacheDispatchContext.Provider value={dispatch}>
+        {props.children}
+      </PokemonCacheDispatchContext.Provider>
+    </PokemonCacheStateContext.Provider>
+  )
 }
 
 function pokemonCacheReducer(state, action) {
@@ -28,9 +36,11 @@ function pokemonCacheReducer(state, action) {
 
 function PokemonInfo({pokemonName}) {
   // 💣 remove the useReducer here
-  const [cache, dispatch] = React.useReducer(pokemonCacheReducer, {})
+  // const [cache, dispatch] = React.useReducer(pokemonCacheReducer, {})
   // 🐨 get the cache from useContext with PokemonCacheStateContext
+  const cache = React.useContext(PokemonCacheStateContext)
   // 🐨 get the dispatch from useContext with PokemonCacheDispatchContext
+  const dispatch = React.useContext(PokemonCacheDispatchContext)
   const cachedPokemon = cache[pokemonName]
 
   const asyncCallback = React.useCallback(() => {
@@ -76,7 +86,7 @@ function PokemonInfo({pokemonName}) {
 
 function PreviousPokemon({onSelect}) {
   // 🐨 get the cache from useContext with PokemonCacheStateContext
-  const cache = {}
+  const cache = React.useContext(PokemonCacheStateContext)
   return (
     <div>
       Previous Pokemon
