@@ -16,7 +16,7 @@
     "@reach/router": "^1.2.1",
     "dequal": "^1.0.0",
     "history": "^4.9.0",
-    "jest-dom": "^3.1.4",
+    "jest-dom": "^4.0.0",
     "mq-polyfill": "^1.1.8",
     "node-fetch": "^2.5.0",
     "react": "^16.8.6",
